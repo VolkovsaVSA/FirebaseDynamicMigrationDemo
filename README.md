@@ -23,6 +23,9 @@ The included `GoogleService-Info-*.plist` files contain **placeholder values** a
 
 Without this setup, the app will show a "Firebase Setup Required" screen with instructions.
 
+<img width="1206" height="2622" alt="Simulator Screenshot - iPhone 17 - 2025-12-26 at 15 45 07" src="https://github.com/user-attachments/assets/59615092-d2e2-4608-81cd-fa0e1f464585" />
+
+
 ---
 
 ## Description
