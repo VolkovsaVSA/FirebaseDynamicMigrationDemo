@@ -1,0 +1,123 @@
+rules_version = '2';
+
+// =============================================================================
+// FIREBASE DYNAMIC MIGRATION DEMO - FIRESTORE SECURITY RULES
+// =============================================================================
+//
+// These rules are for the demo project.
+// WARNING: Use stricter rules in production!
+//
+// Data structure:
+// users/{userId}
+//   - name: string
+//   - email: string
+//   - role: string
+//   - createdAt: timestamp
+//   - migratedAt: timestamp
+//   - migratedFrom: string
+//   - migrationVersion: string
+//   - settings: map
+//       - theme: string
+//       - language: string
+//       - notifications: bool
+//
+// =============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // -------------------------------------------------------------------------
+    // DEMO RULES (for testing)
+    // -------------------------------------------------------------------------
+    //
+    // WARNING: These rules allow access to EVERYONE!
+    // Use only for development and testing.
+    //
+    // Uncomment this block for quick testing:
+    //
+    // match /users/{userId} {
+    //   allow read, write: if true;
+    // }
+    
+    // -------------------------------------------------------------------------
+    // PRODUCTION RULES (recommended)
+    // -------------------------------------------------------------------------
+    
+    match /users/{userId} {
+      
+      // Function to validate user profile data
+      function isValidUserData(data) {
+        return data.keys().hasAll(['name', 'email', 'migratedAt'])
+          && data.name is string
+          && data.email is string
+          && data.migratedAt is timestamp;
+      }
+      
+      // Function to check if userId matches email or external ID
+      // IMPORTANT: We do NOT use request.auth.uid since migration
+      // happens from a different Firebase project!
+      function isOwner(userId) {
+        // Option 1: userId = email of authenticated user
+        return request.auth != null && request.auth.token.email == userId;
+      }
+      
+      // =====================================================================
+      // ACCESS RULES
+      // =====================================================================
+      
+      // READ: Only owner can read their data
+      // 
+      // In NewApp user authenticates and reads their migrated data.
+      // userId must match user's email.
+      allow read: if isOwner(userId);
+      
+      // WRITE: Allow anonymous write for migration
+      //
+      // OldApp writes data WITHOUT authentication in NewApp project.
+      // This is the key point of migration - we cannot authenticate in a "foreign" project.
+      //
+      // Protection against abuse:
+      // 1. Validate data structure
+      // 2. Limit document size
+      // 3. Require mandatory fields
+      allow create: if isValidUserData(request.resource.data)
+                    && request.resource.data.size() < 50; // Max 50 fields
+      
+      // UPDATE: Only owner can update
+      //
+      // After data is imported into NewApp, only authenticated
+      // user can modify it.
+      allow update: if isOwner(userId) 
+                    && isValidUserData(request.resource.data);
+      
+      // DELETE: Only owner can delete
+      //
+      // After successful import user can delete migration data.
+      allow delete: if isOwner(userId);
+    }
+    
+    // -------------------------------------------------------------------------
+    // ALTERNATIVE RULES (for external ID case)
+    // -------------------------------------------------------------------------
+    //
+    // If using external user_id instead of email:
+    //
+    // match /users/{userId} {
+    //   // Write: require userId match with field in data
+    //   allow create: if request.resource.data.userId == userId
+    //                 && isValidUserData(request.resource.data);
+    //   
+    //   // Read: check via Custom Claims
+    //   allow read: if request.auth.token.externalId == userId;
+    // }
+    
+    // -------------------------------------------------------------------------
+    // DENY ACCESS TO OTHER DOCUMENTS
+    // -------------------------------------------------------------------------
+    
+    // By default deny access to everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
