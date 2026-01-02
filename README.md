@@ -290,7 +290,7 @@ This error occurs when GOOGLE_APP_ID in the plist is invalid. Download a fresh G
 ## Related Materials
 
 - [Medium: Dynamic Firebase Project Switching (eng)](https://medium.com/@fbcdaccfebbdeaaddc/firebase-dynamic-switching-of-projects-in-an-ios-app-8a00aa5dc130?postPublishedType=initial)
-- [Habr: Dynamic Firebase Project Switching (rus)](https://habr.com/...)
+- [Habr: Dynamic Firebase Project Switching (rus)](https://habr.com/ru/articles/982284/)
 - [Firebase iOS SDK Documentation](https://firebase.google.com/docs/ios/setup)
 - [FirebaseApp.configure() API](https://firebase.google.com/docs/reference/swift/firebasecore/api/reference/Classes/FirebaseApp)
 
