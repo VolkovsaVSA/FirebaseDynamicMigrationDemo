@@ -297,7 +297,3 @@ This error occurs when GOOGLE_APP_ID in the plist is invalid. Download a fresh G
 ## License
 
 MIT License
-
-## Contributing
-
-Pull requests welcome! For major changes, please open an issue first.
